@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["filteredRelationCount"]
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name      String?
+    email     String   @unique
+    password  String?
+    googleId  String?  @unique
+    avatarUrl String?
+    createdAt DateTime @default(now())
+
+    answers Answer[]
+}
+
+model Sidewalk {
+    id        String   @id @default(cuid())
+    name      String
+    start     String?
+    end       String?
+    createdAt DateTime @default(now())
+
+    answers Answer[]
+}
+
+model Category {
+    id   String @id @default(cuid())
+    name String
+
+    questions Question[]
+}
+
+model Question {
+    id         String @id @default(cuid())
+    text       String
+    categoryId String
+
+    answers Answer[]
+    choices Choice[]
+
+    category Category @relation(fields: [categoryId], references: [id])
+}
+
+model Choice {
+    id         String @id @default(cuid())
+    text       String
+    value      Int
+    questionId String
+
+    question Question @relation(fields: [questionId], references: [id])
+}
+
+model Answer {
+    id         String @id @default(cuid())
+    userId     String
+    choice     Int
+    questionId String
+    sidewalkId String
+
+    user     User     @relation(fields: [userId], references: [id])
+    question Question @relation(fields: [questionId], references: [id])
+    sidewalk Sidewalk @relation(fields: [sidewalkId], references: [id])
+
+    @@unique([userId, questionId, sidewalkId])
+}
